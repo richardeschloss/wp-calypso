@@ -21,6 +21,8 @@ const CircularDependencyPlugin = require( 'circular-dependency-plugin' );
 const DuplicatePackageCheckerPlugin = require( 'duplicate-package-checker-webpack-plugin' );
 const MomentTimezoneDataPlugin = require( 'moment-timezone-data-webpack-plugin' );
 const FilterWarningsPlugin = require( 'webpack-filter-warnings-plugin' );
+const browserslist = require( 'browserslist' );
+const caniuse = require( 'caniuse-api' );
 
 /**
  * Internal dependencies
@@ -43,6 +45,16 @@ const shouldEmitStatsWithReasons = process.env.EMIT_STATS === 'withreasons';
 const shouldCheckForCycles = process.env.CHECK_CYCLES === 'true';
 const codeSplit = config.isEnabled( 'code-splitting' );
 const isCalypsoClient = process.env.CALYPSO_CLIENT === 'true';
+const isDesktop = calypsoEnv === 'desktop';
+
+const defaultBrowserslistEnv = isCalypsoClient || isDesktop ? 'evergreen' : 'defaults';
+const browserslistEnv = process.env.BROWSERSLIST_ENV || defaultBrowserslistEnv;
+const browsers = browserslist( null, { env: browserslistEnv } );
+const extraPath = browserslistEnv === 'defaults' ? 'fallback' : browserslistEnv;
+
+if ( ! process.env.BROWSERSLIST_ENV ) {
+	process.env.BROWSERSLIST_ENV = browserslistEnv;
+}
 
 /*
  * Create reporter for ProgressPlugin (used with EMIT_STATS)
@@ -145,6 +157,26 @@ const wordpressExternals = ( context, request, callback ) =>
 		: callback();
 
 /**
+ * Auxiliary method to help in picking an ECMAScript version based on a list
+ * of supported browser versions.
+ * Used in configuring Terser.
+ *
+ * @param {Array<String>} supportedBrowsers The list of supported browsers.
+ *
+ * @returns {Number} The maximum supported ECMAScript version.
+ */
+function chooseTerserEcmaVersion( supportedBrowsers ) {
+	if ( ! caniuse.isSupported( 'arrow-functions', supportedBrowsers ) ) {
+		return 5;
+	}
+	if ( ! caniuse.isSupported( 'es6-class', supportedBrowsers ) ) {
+		return 5;
+	}
+
+	return 6;
+}
+
+/**
  * Return a webpack config object
  *
  * @see {@link https://webpack.js.org/configuration/configuration-types/#exporting-a-function}
@@ -170,8 +202,8 @@ function getWebpackConfig( {
 		mode: isDevelopment ? 'development' : 'production',
 		devtool: process.env.SOURCEMAP || ( isDevelopment ? '#eval' : false ),
 		output: {
-			path: path.join( __dirname, 'public' ),
-			publicPath: '/calypso/',
+			path: path.join( __dirname, 'public', extraPath ),
+			publicPath: `/calypso/${ extraPath }/`,
 			filename: '[name].[chunkhash].min.js', // prefer the chunkhash, which depends on the chunk, not the entire build
 			chunkFilename: '[name].[chunkhash].min.js', // ditto
 			devtoolModuleFilenameTemplate: 'app:///[resource-path]',
@@ -195,8 +227,11 @@ function getWebpackConfig( {
 					parallel: workerCount,
 					sourceMap: Boolean( process.env.SOURCEMAP ),
 					terserOptions: {
-						ecma: 5,
-						safari10: true,
+						ecma: chooseTerserEcmaVersion( browsers ),
+						ie8: false,
+						safari10: browsers.some(
+							browser => browser.includes( 'safari 10' ) || browser.includes( 'ios_saf 10' )
+						),
 						mangle: calypsoEnv !== 'desktop',
 					},
 				} ),
@@ -222,7 +257,7 @@ function getWebpackConfig( {
 							options: {
 								configFile: path.resolve( __dirname, 'babel.config.js' ),
 								babelrc: false,
-								cacheDirectory: path.join( __dirname, 'build', '.babel-client-cache' ),
+								cacheDirectory: path.join( __dirname, 'build', '.babel-client-cache', extraPath ),
 								cacheIdentifier,
 							},
 						},
@@ -331,10 +366,15 @@ function getWebpackConfig( {
 			new WebpackRTLPlugin( {
 				minify: ! isDevelopment,
 			} ),
-			new AssetsWriter( {
-				filename: 'assets.json',
-				path: path.join( __dirname, 'server', 'bundler' ),
-			} ),
+			isCalypsoClient &&
+				new AssetsWriter( {
+					filename:
+						browserslistEnv === 'defaults'
+							? 'assets-fallback.json'
+							: `assets-${ browserslistEnv }.json`,
+					path: path.join( __dirname, 'server', 'bundler' ),
+					assetExtraPath: extraPath,
+				} ),
 			new DuplicatePackageCheckerPlugin(),
 			shouldCheckForCycles &&
 				new CircularDependencyPlugin( {
