@@ -174,8 +174,10 @@ class Layout extends Component {
 export default connect( state => {
 	const sectionGroup = getSectionGroup( state );
 	const sectionName = getSectionName( state );
+	const noMasterbarForSection = 'signup' === sectionName || 'jetpack-connect' === sectionName;
+
 	return {
-		masterbarIsHidden: ! masterbarIsVisible( state ) || 'signup' === sectionName,
+		masterbarIsHidden: ! masterbarIsVisible( state ) || noMasterbarForSection,
 		isLoading: isSectionLoading( state ),
 		isSupportSession: isSupportSession( state ),
 		sectionGroup,
