@@ -1,8 +1,22 @@
 .is-section-jetpack-connect {
 	.layout__content {
+		// Adjust the padding as we no longer
+		// show the masterbar.
+		padding: 48px 0 0;
+
 		& > .banner {
 			max-width: 600px;
 		}
+	}
+
+	// Hide the masterbar for real
+	.masterbar {
+		display: none;
+	}
+
+	// Move the back button up top
+	.back-button {
+		top: 0;
 	}
 }
 
