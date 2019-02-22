@@ -111,8 +111,10 @@ LayoutLoggedOut.propTypes = {
 
 export default connect( state => {
 	const section = getSection( state );
+	const noMasterbarForSection = 'signup' === section.name || 'jetpack-connect' === section.name;
+
 	return {
-		masterbarIsHidden: ! masterbarIsVisible( state ) || 'signup' === section.name,
+		masterbarIsHidden: ! masterbarIsVisible( state ) || noMasterbarForSection,
 		section,
 		oauth2Client: getCurrentOAuth2Client( state ),
 		useOAuth2Layout: showOAuth2Layout( state ),
