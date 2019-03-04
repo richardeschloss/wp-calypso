@@ -165,4 +165,12 @@ export default {
 		},
 		defaultVariation: 'featured',
 	},
+	builderReferralHelpBanner: {
+		datestamp: '20190304',
+		variations: {
+			builderReferralBanner: 25,
+			original: 75,
+		},
+		defaultVariation: 'original',
+	},
 };
