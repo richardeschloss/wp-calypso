@@ -170,6 +170,7 @@ export default {
 		variations: {
 			builderReferralBanner: 25,
 			original: 75,
+		},
 	},
 	builderReferralHelpPopover: {
 		datestamp: '20190227',
