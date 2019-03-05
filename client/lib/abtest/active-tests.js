@@ -168,9 +168,10 @@ export default {
 	builderReferralHelpBanner: {
 		datestamp: '20190304',
 		variations: {
-			builderReferralBanner: 25,
-			original: 75,
+			builderReferralBanner: 10,
+			original: 90,
 		},
+		defaultVariation: 'original',
 	},
 	builderReferralHelpPopover: {
 		datestamp: '20190227',
