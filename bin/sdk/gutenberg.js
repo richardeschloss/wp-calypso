@@ -100,7 +100,6 @@ exports.config = ( { argv: { inputDir, outputDir }, getBaseConfig } ) => {
 
 	return {
 		...baseConfig,
-		bail: true,
 		plugins: compact( [
 			...baseConfig.plugins,
 			fs.existsSync( presetPath ) &&
