@@ -72,8 +72,6 @@ exports.config = ( { argv: { inputDir, outputDir }, getBaseConfig } ) => {
 			return viewBlocks;
 		}, {} );
 
-		console.log( 'VB: %o', viewBlocksScripts );
-
 		// Find all the editor shared scripts
 		const sharedEditorUtilsScripts = sharedScripts( 'editor-shared', inputDir );
 
