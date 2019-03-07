@@ -107,9 +107,9 @@
 	}
 
 	.cart__total {
-		color: var( --color-text-subtle );
+		color: var( --color-text );
 		display: table;
-		font-size: 14px;
+		font-size: 16px;
 
 		.cart__total-row.grand-total {
 			display: table-footer-group;
@@ -137,8 +137,6 @@
 
 		.cart__total-amount.grand-total {
 			font-weight: 600;
-			padding-top: 5px;
-			margin-top: 5px;
 		}
 	}
 
@@ -147,8 +145,6 @@
 		height: 0;
 		width: 30%;
 		margin-left: 70%;
-		padding-top: 5px;
-		margin-top: 5px;
 	}
 
 	.cart__coupon {
